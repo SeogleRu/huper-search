@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HUPER search / ГИПЕР поиск<titlee>
+<style>
+:root{--bg:#f6f8fc;--card:#fff;--text:#18212f;--muted:#64748b;--accent:#2563eb;--accent2:#1d4ed8;--line:#dbe3ef;--shadow:0 16px 45px rgba(30,64,175,.12)}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% 0,#e8f0ff 0,transparent 42%),var(--bg);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text)}
+main{width:min(900px,92vw);margin:auto;padding:11vh 0 60px}.brand{text-align:center;margin-bottom:28px}.logo{display:inline-flex;align-items:center;gap:12px;font-size:clamp(30px,6vw,50px);font-weight:800;letter-spacing:-2px}.logo-mark{width:52px;height:52px;border-radius:17px;background:linear-gradient(135deg,#2563eb,#7c3aed);display:grid;place-items:center;color:white;box-shadow:var(--shadow)}.tagline{color:var(--muted);margin:8px 0 0}
+.search-wrap{position:relative}.search-box{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:9px 9px 9px 18px;box-shadow:var(--shadow)}.suggestions{position:absolute;z-index:10;top:calc(100% + 8px);left:0;right:0;margin:0;padding:7px;list-style:none;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);display:none}.suggestions.open{display:block}.suggestion{width:100%;display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:10px;background:transparent;color:var(--text);text-align:left;font-weight:500}.suggestion:hover,.suggestion.active{background:#eef4ff;color:#1d4ed8;transform:none}.suggestion-mark{color:var(--muted)}.search-box:focus-within{border-color:#8bb1ff;box-shadow:0 17px 50px rgba(37,99,235,.17)}.icon{font-size:22px;color:var(--muted)}input{min-width:0;flex:1;border:0;outline:0;background:transparent;color:var(--text);font:inherit;font-size:18px;padding:10px 0}button{border:0;border-radius:13px;background:var(--accent);color:#fff;font-weight:700;font-size:15px;padding:13px 20px;cursor:pointer;transition:.2s}button:hover{background:var(--accent2);transform:translateY(-1px)}button:active{transform:none}
+.engines{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:18px}.engine{background:#fff;color:#334155;border:1px solid var(--line);padding:9px 13px;font-weight:600}.engine.active{background:#e8f0ff;color:#1d4ed8;border-color:#a9c4ff}.engine:hover{background:#eef4ff}
+.results{display:none;margin-top:28px}.results.open{display:block}.results-head{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:12px}.results-head h2{font-size:20px;margin:0}.open-external{padding:9px 13px;font-size:13px}.result-frame{width:100%;height:620px;border:1px solid var(--line);border-radius:18px;background:#fff;box-shadow:var(--shadow)}.frame-note{margin:10px 3px 0;color:var(--muted);font-size:13px}.info{margin:34px auto 0;max-width:700px;background:rgba(255,255,255,.72);border:1px solid var(--line);border-radius:18px;padding:20px 22px;color:var(--muted);line-height:1.55}.info strong{color:var(--text)}..history{margin-top:28px}.history h2{font-size:16px;margin:0 0 12px}.history-list{display:flex;gap:9px;flex-wrap:wrap}.history-item{display:flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:8px 12px;color:#475569;cursor:pointer}.history-item:hover{border-color:#9db9f5;color:#1d4ed8}.empty{color:var(--muted);font-size:14px}footer{text-align:center;color:#94a3b8;font-size:13px;margin-top:45px}@media(max-width:540px){main{padding-top:7vh}.search-box{border-radius:16px;padding-left:13px}button[type=submit]{padding:12px 14px}.tagline{font-size:14px}}
+</style>
+</head>
+<body>
+<main>
+<section class="brand">
+<div class="logo"><span class="logo-mark">⌕</span><span>HUPER search / ГИПЕР поиск</span></div>
+<p class="tagline">Один запрос — весь интернет</p>
+</section>
+<div class="search-wrap">
+<form id="searchForm" class="search-box" autocomplete="off">
+<span class="icon" aria-hidden="true">⌕</span>
+<input id="query" type="search" placeholder="Введите поисковый запрос…" aria-label="Поисковый запрос" aria-autocomplete="list" aria-controls="suggestions" aria-expanded="false" autofocus>
+<button type="submit">Искать!</button>
+</form>
+<ul id="suggestions" class="suggestions" role="listbox" aria-label="Подсказки поиска"></ul>
+</div>
+<div class="engines" role="group" aria-label="Выбор поисковой системы">
+<button class="engine active" data-engine="google" type="button">Google</button>
+<button class="engine" data-engine="bing" type="button">Bing</button>
+<button class="engine" data-engine="duck" type="button">DuckDuckGo</button>
+<button class="engine" data-engine="yandex" type="button">Яндекс</button>
+</div>
+<section id="results" class="results" aria-live="polite">
+<div class="results-head"><h2 id="resultsTitle">Результаты поиска</h2><button id="openExternal" class="open-external" type="button">Открыть в новой вкладке ↗</button></div>
+<iframe id="resultFrame" class="result-frame" title="Результаты поиска" sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-scripts allow-same-origin"></iframe>
+<p class="frame-note">Если поисковик запрещает показ страницы внутри сайта, откройте результаты в новой вкладке.</p>
+</section>
+<section class="history">
+<h2>Недавние запросы</h2>
+<div id="historyList" class="history-list"></div>
+</section>
+<section class="info"><strong>Как это работает:</strong> выберите поисковую систему, введите запрос и нажмите «Искать!». Результаты безопасно откроются в новой вкладке. Для полноценного собственного индекса интернета нужен сервер, поисковый робот и база данных; эта версия — удобный клиент для популярных веб-поисковиков.</section>
+<footer>Поисковые запросы не отправляются этому приложению и сохраняются только локально в браузере.</footer>
+</main>
+<script>
+const urls={google:'https://www.google.com/search?q=',bing:'https://www.bing.com/search?q=',duck:'https://duckduckgo.com/?q=',yandex:'https://yandex.com/search/?text='};
+let selected='google';
+const form=document.getElementById('searchForm'),input=document.getElementById('query'),historyList=document.getElementById('historyList'),suggestions=document.getElementById('suggestions'),results=document.getElementById('results'),resultsTitle=document.getElementById('resultsTitle'),resultFrame=document.getElementById('resultFrame'),openExternal=document.getElementById('openExternal');let currentResultUrl='';
+const common=['погода сегодня','новости технологий','курс валют','переводчик онлайн','карты и маршруты','рецепты на ужин','фильмы онлайн','купить билеты','музыка для работы','обучение программированию','искусственный интеллект','как выучить английский'];let activeSuggestion=-1;
+function getSuggestions(q){q=q.toLowerCase().trim();if(!q)return[];const history=getHistory();return [...new Set([...history,...common])].filter(x=>x.toLowerCase().includes(q)&&x.toLowerCase()!==q).slice(0,6)}
+function closeSuggestions(){suggestions.classList.remove('open');suggestions.innerHTML='';input.setAttribute('aria-expanded','false');activeSuggestion=-1}
+function chooseSuggestion(text){input.value=text;closeSuggestions();input.focus()}
+function renderSuggestions(){const items=getSuggestions(input.value);suggestions.innerHTML='';activeSuggestion=-1;if(!items.length){closeSuggestions();return}items.forEach((text,i)=>{const li=document.createElement('li');li.role='option';const btn=document.createElement('button');btn.type='button';btn.className='suggestion';btn.innerHTML='<span class="suggestion-mark">⌕</span><span></span>';btn.lastElementChild.textContent=text;btn.addEventListener('mousedown',e=>{e.preventDefault();chooseSuggestion(text)});li.appendChild(btn);suggestions.appendChild(li)});suggestions.classList.add('open');input.setAttribute('aria-expanded','true')}
+const getHistory=()=>{try{return JSON.parse(localStorage.getItem('webSearchHistory')||'[]')}catch{return[]}};
+function renderHistory(){const items=getHistory();historyList.innerHTML='';if(!items.length){historyList.innerHTML='<span class="empty">Здесь появятся ваши запросы</span>';return}items.forEach(text=>{const el=document.createElement('button');el.type='button';el.className='history-item';el.textContent='↗ '+text;el.onclick=()=>{input.value=text;input.focus()};historyList.appendChild(el)})}
+function saveQuery(q){const items=getHistory().filter(x=>x!==q);items.unshift(q);localStorage.setItem('webSearchHistory',JSON.stringify(items.slice(0,8)));renderHistory()}
+document.querySelectorAll('.engine').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.engine').forEach(b=>b.classList.remove('active'));btn.classList.add('active');selected=btn.dataset.engine;input.focus()}));
+input.addEventListener('input',renderSuggestions);
+input.addEventListener('focus',renderSuggestions);
+input.addEventListener('keydown',e=>{const buttons=[...suggestions.querySelectorAll('.suggestion')];if(!buttons.length)return;if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();activeSuggestion=(activeSuggestion+(e.key==='ArrowDown'?1:-1)+buttons.length)%buttons.length;buttons.forEach((b,i)=>b.classList.toggle('active',i===activeSuggestion));buttons[activeSuggestion].scrollIntoView({block:'nearest'})}else if(e.key==='Enter'&&activeSuggestion>=0){e.preventDefault();chooseSuggestion(buttons[activeSuggestion].innerText.trim())}else if(e.key==='Escape')closeSuggestions()});
+document.addEventListener('click',e=>{if(!e.target.closest('.search-wrap'))closeSuggestions()});
+openExternal.addEventListener('click',()=>{if(currentResultUrl)window.open(currentResultUrl,'_blank','noopener,noreferrer')});
+form.addEventListener('submit',e=>{e.preventDefault();const q=input.value.trim();if(!q){input.focus();return}closeSuggestions();saveQuery(q);currentResultUrl=urls[selected]+encodeURIComponent(q);resultsTitle.textContent='Результаты: '+q;resultFrame.src=currentResultUrl;results.classList.add('open');results.scrollIntoView({behavior:'smooth',block:'start'})});
+renderHistory();
+</script>
+</body>
+  </html>
