@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>HUPER search / ГИПЕР поиск<title>
+<title>Веб-поиск</title>
 <style>
 :root{--bg:#f6f8fc;--card:#fff;--text:#18212f;--muted:#64748b;--accent:#2563eb;--accent2:#1d4ed8;--line:#dbe3ef;--shadow:0 16px 45px rgba(30,64,175,.12)}
 *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% 0,#e8f0ff 0,transparent 42%),var(--bg);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text)}
@@ -16,14 +16,14 @@ main{width:min(900px,92vw);margin:auto;padding:11vh 0 60px}.brand{text-align:cen
 <body>
 <main>
 <section class="brand">
-<div class="logo"><span class="logo-mark">⌕</span><span>HUPER search / ГИПЕР поиск</span></div>
+<div class="logo"><span class="logo-mark">⌕</span><span>Веб-поиск</span></div>
 <p class="tagline">Один запрос — весь интернет</p>
 </section>
 <div class="search-wrap">
 <form id="searchForm" class="search-box" autocomplete="off">
 <span class="icon" aria-hidden="true">⌕</span>
 <input id="query" type="search" placeholder="Введите поисковый запрос…" aria-label="Поисковый запрос" aria-autocomplete="list" aria-controls="suggestions" aria-expanded="false" autofocus>
-<button type="submit">Искать!</button>
+<button type="submit">Найти</button>
 </form>
 <ul id="suggestions" class="suggestions" role="listbox" aria-label="Подсказки поиска"></ul>
 </div>
@@ -36,13 +36,13 @@ main{width:min(900px,92vw);margin:auto;padding:11vh 0 60px}.brand{text-align:cen
 <section id="results" class="results" aria-live="polite">
 <div class="results-head"><h2 id="resultsTitle">Результаты поиска</h2><button id="openExternal" class="open-external" type="button">Открыть в новой вкладке ↗</button></div>
 <iframe id="resultFrame" class="result-frame" title="Результаты поиска" sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-scripts allow-same-origin"></iframe>
-<p class="frame-note">Если поисковик запрещает показ страницы внутри сайта, откройте результаты в новой вкладке.</p>
+<p class="frame-note">Если поисковик запрещает показ страницы внутри приложения, откройте результаты в новой вкладке.</p>
 </section>
 <section class="history">
 <h2>Недавние запросы</h2>
 <div id="historyList" class="history-list"></div>
 </section>
-<section class="info"><strong>Как это работает:</strong> выберите поисковую систему, введите запрос и нажмите «Искать!». Результаты безопасно откроются в новой вкладке. Для полноценного собственного индекса интернета нужен сервер, поисковый робот и база данных; эта версия — удобный клиент для популярных веб-поисковиков.</section>
+<section class="info"><strong>Как это работает:</strong> выберите поисковую систему, введите запрос и нажмите «Найти». Результаты безопасно откроются в новой вкладке. Для полноценного собственного индекса интернета нужен сервер, поисковый робот и база данных; эта версия — удобный клиент для популярных веб-поисковиков.</section>
 <footer>Поисковые запросы не отправляются этому приложению и сохраняются только локально в браузере.</footer>
 </main>
 <script>
