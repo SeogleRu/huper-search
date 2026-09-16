@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>HUPER bot</title>
+  <style>
+    /* Плавные тени и размытие для liquid glass */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 20% 30%, #b8d9ff, #7aa9e0 40%, #2b4b7a 90%);
+      background-attachment: fixed;
+      padding: 16px;
+    }
+
+    /* Основной контейнер чата — эффект жидкого стекла */
+    .chat-container {
+      width: 100%;
+      max-width: 420px;
+      height: 700px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      border-radius: 42px;
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(30px) saturate(180%);
+      -webkit-backdrop-filter: blur(30px) saturate(180%);
+      box-shadow: 
+        0 30px 50px -20px rgba(0, 0, 0, 0.5),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.25),
+        inset 0 0 30px rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      overflow: hidden;
+      position: relative;
+      transition: box-shadow 0.3s ease;
+    }
+
+    /* Дополнительные блики для эффекта стекла */
+    .chat-container::before {
+      content: '';
+      position: absolute;
+      top: -20%;
+      left: -20%;
+      width: 140%;
+      height: 140%;
+      background: radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.4), transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.6;
+    }
+
+    /* Шапка чата */
+    .chat-header {
+      padding: 20px 24px 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 2;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #fff8e7, #ffe6b0);
+      box-shadow: 0 8px 20px rgba(255, 220, 150, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(5px);
+      color: #2b4b7a;
+    }
+
+    .header-info h1 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: white;
+      text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      letter-spacing: -0.01em;
+    }
+
+    .header-info p {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.8);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #6fe38e;
+      box-shadow: 0 0 12px #6fe38e;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.7; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.2); }
+      100% { opacity: 0.7; transform: scale(1); }
+    }
+
+    /* Область сообщений — прозрачная, но с внутренним свечением */
+    .chat-messages {
+      flex: 1;
+      padding: 20px 18px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      z-index: 2;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+
+    .chat-messages::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .chat-messages::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 10px;
+      backdrop-filter: blur(5px);
+    }
+
+    /* Пузыри сообщений — тоже стеклянные */
+    .message {
+      max-width: 80%;
+      padding: 14px 18px;
+      border-radius: 24px;
+      font-size: 0.95rem;
+      line-height: 1.45;
+      word-break: break-word;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+      transition: all 0.2s ease;
+    }
+
+    .bot-message {
+      align-self: flex-start;
+      background: rgba(255, 255, 255, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-bottom-left-radius: 8px;
+      color: #0a1a2e;
+      text-shadow: 0 1px 4px rgba(255, 255, 255, 0.5);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1), inset 0 1px 10px rgba(255, 255, 255, 0.5);
+    }
+
+    .user-message {
+      align-self: flex-end;
+      background: rgba(43, 75, 122, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-bottom-right-radius: 8px;
+      color: white;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 4px 15px rgba(0, 30, 60, 0.3), inset 0 1px 8px rgba(255, 255, 255, 0.3);
+    }
+
+    /* Поле ввода и кнопка — стеклянные */
+    .chat-input-area {
+      padding: 16px 20px 20px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255, 255, 255, 0.3);
+      z-index: 3;
+      box-shadow: 0 -10px 30px -10px rgba(0, 0, 0, 0.2);
+    }
+
+    .chat-input-area input {
+      flex: 1;
+      padding: 15px 20px;
+      border-radius: 40px;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      font-size: 0.95rem;
+      color: #0a1a2e;
+      outline: none;
+      transition: all 0.2s;
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .chat-input-area input::placeholder {
+      color: rgba(10, 26, 46, 0.5);
+      font-weight: 400;
+    }
+
+    .chat-input-area input:focus {
+      border-color: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.3);
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05), 0 0 0 3px rgba(255, 255, 255, 0.3);
+    }
+
+    .chat-input-area button {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 8px 20px -5px rgba(0, 0, 0, 0.3), inset 0 1px 10px rgba(255, 255, 255, 0.6);
+      color: #0a1a2e;
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .chat-input-area button:hover {
+      background: rgba(255, 255, 255, 0.5);
+      transform: scale(1.02);
+      border-color: white;
+      box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.4), inset 0 1px 15px white;
+    }
+
+    .chat-input-area button:active {
+      transform: scale(0.96);
+    }
+
+    /* Анимация появления сообщений */
+    @keyframes fadeSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .message {
+      animation: fadeSlideIn 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+    }
+
+    /* Декоративные блестящие круги на фоне (внутри контейнера) */
+    .glass-bubble {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.05));
+      pointer-events: none;
+      z-index: 1;
+      filter: blur(2px);
+    }
+
+    .bubble-1 {
+      width: 180px;
+      height: 180px;
+      top: 15%;
+      left: -60px;
+      opacity: 0.5;
+    }
+
+    .bubble-2 {
+      width: 250px;
+      height: 250px;
+      bottom: -40px;
+      right: -80px;
+      opacity: 0.4;
+    }
+
+    .bubble-3 {
+      width: 100px;
+      height: 100px;
+      top: 50%;
+      right: 10%;
+      opacity: 0.3;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <!-- Декоративные стеклянные пузыри -->
+    <div class="glass-bubble bubble-1"></div>
+    <div class="glass-bubble bubble-2"></div>
+    <div class="glass-bubble bubble-3"></div>
+
+    <!-- Шапка -->
+    <div class="chat-header">
+      <div class="avatar">🤖</div>
+      <div class="header-info">
+        <h1>HUPER bot</h1>
+        <p><span class="status-dot"></span> онлайн •</p>
+      </div>
+    </div>
+
+    <!-- Сообщения -->
+    <div class="chat-messages" id="chatMessages">
+      <!-- сообщения добавляются через JS -->
+    </div>
+
+    <!-- Поле ввода -->
+    <div class="chat-input-area">
+      <input type="text" id="messageInput" placeholder="Напишите сообщение..." autocomplete="off">
+      <button id="sendButton" aria-label="Отправить">➤</button>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const chatMessages = document.getElementById('chatMessages');
+      const messageInput = document.getElementById('messageInput');
+      const sendButton = document.getElementById('sendButton');
+
+      // Начальное приветственное сообщение
+      function addWelcomeMessage() {
+        addMessage('Привет! Я чат-бот в стиле liquid glass. Напиши что-нибудь, и я отвечу ✨', 'bot');
+      }
+
+      // Функция добавления сообщения
+      function addMessage(text, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', sender === 'bot' ? 'bot-message' : 'user-message');
+        messageDiv.textContent = text;
+        chatMessages.appendChild(messageDiv);
+        // Прокрутка вниз
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      // Ответы бота (простые, но с характером)
+      function getBotResponse(userText) {
+        const lower = userText.toLowerCase().trim();
+
+        // Приветствия
+        if (lower.match(/привет|здравствуй|hi|hello|хай/)) {
+          return 'Привет-привет! Как твои дела? 😊';
+        }
+        if (lower.match(/как дела|как ты|how are you/)) {
+          return 'У меня всё отлично! Я же стеклянный бот, всегда прозрачен и чист. А у тебя как?';
+        }
+        if (lower.match(/что делаешь|чем занят/)) {
+          return 'Переливаюсь бликами и жду твоих сообщений ✨';
+        }
+        if (lower.match(/пока|до свидания|bye/)) {
+          return 'До встречи! Буду скучать по нашим стеклянным диалогам 💎';
+        }
+        if (lower.match(/имя|как зовут|кто ты/)) {
+          return 'Меня зовут Liquid Bot. Я сделан из жидкого стекла и хорошего настроения.';
+        }
+        if (lower.match(/люблю|нравится/)) {
+          return 'О, это взаимно! Ты тоже классный собеседник.';
+        }
+        if (lower.match(/погода|weather/)) {
+          return 'За окном всегда идеальная погода, когда смотришь через стекло 😎';
+        }
+        if (lower.match(/спасибо|благодарю/)) {
+          return 'Всегда пожалуйста! Обращайся, если что-то понадобится.';
+        }
+        if (lower.match(/стекло|glass|liquid/)) {
+          return 'Да, я весь из жидкого стекла! Размытие, блики, прозрачность — моя стихия.';
+        }
+
+        // Если ничего не совпало — эхо-ответ с небольшим разнообразием
+        const fallbacks = [
+          'Интересно! Расскажи подробнее.',
+          'Я тебя услышал. А что думаешь ты?',
+          'Звучит любопытно. Продолжай.',
+          'Хм, я всё обдумал. Стеклянные мысли... 💭',
+          'Согласен! Но давай копнём глубже.',
+          'Я запомню это. В моей прозрачной памяти всё сохранится.'
+        ];
+        return fallbacks[Math.floor(Math.random() * fallbacks.length)];
+      }
+
+      // Обработка отправки сообщения
+      function handleSend() {
+        const text = messageInput.value.trim();
+        if (!text) return;
+
+        // Добавляем сообщение пользователя
+        addMessage(text, 'user');
+        messageInput.value = '';
+        messageInput.focus();
+
+        // Имитация задержки ответа бота (для естественности)
+        setTimeout(() => {
+          const botReply = getBotResponse(text);
+          addMessage(botReply, 'bot');
+        }, 400 + Math.random() * 400);
+      }
+
+      // Слушатели событий
+      sendButton.addEventListener('click', handleSend);
+
+      messageInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleSend();
+        }
+      });
+
+      // Добавляем приветствие при загрузке
+      window.addEventListener('load', () => {
+        addWelcomeMessage();
+        // Небольшая задержка для фокуса
+        setTimeout(() => messageInput.focus(), 300);
+      });
+
+      // Запасной вариант: если сообщений нет, всё равно показываем приветствие
+      if (chatMessages.children.length === 0) {
+        addWelcomeMessage();
+      }
+    })();
+  </script>
+</body>
+  </html>
